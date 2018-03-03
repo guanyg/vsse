@@ -1,0 +1,22 @@
+syntax = "proto3";
+package vsse.proto;
+
+message RadixTreeEl {
+    repeated TreeNodeEl nodes = 1;
+}
+
+message TreeNodeEl {
+
+    // Common
+    int32 parentId = 1;
+    int32 label = 2;
+    bytes h_cp = 3;
+
+    // LeafNode
+    bytes h_cwt = 5;
+    string des = 6;
+    bytes bitmap = 7;
+    bytes h_bitmap = 8;
+    repeated bytes h_cws = 9;
+
+}

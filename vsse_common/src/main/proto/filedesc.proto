@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package vsse.proto;
+
+message DataFile {
+    repeated Document doc = 1;
+}
+
+message Document {
+    int32 id = 1;
+    repeated Keyword keywords = 2;
+    bytes hash = 3;
+    // bytes plain = 4;
+    bytes cipher = 5;
+}
+
+message Keyword {
+    string keyword = 1;
+    int32 rank = 2;
+}
+
+message Credential {
+    string k = 1;
+    string k0 = 2;
+    string k1 = 3;
+}

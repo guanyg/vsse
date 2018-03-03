@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="test-server" />
+        <module name="test_client" />
+        <module name="test_common" />
+        <module name="test_server" />
+        <module name="vsse-client" />
+        <module name="vsse-server" />
+        <module name="vsse_client" />
+        <module name="vsse_common" />
+        <module name="vsse_server" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="test" target="1.8" />
+      <module name="test-common" target="1.8" />
+      <module name="test-server" target="1.8" />
+      <module name="test_client" target="1.8" />
+      <module name="test_common" target="1.8" />
+      <module name="test_server" target="1.8" />
+      <module name="vsse" target="1.8" />
+      <module name="vsse-client" target="1.8" />
+      <module name="vsse-server" target="1.8" />
+      <module name="vsse_client" target="1.8" />
+      <module name="vsse_common" target="1.8" />
+      <module name="vsse_server" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+package vsse.proto;
+
+import "radix.proto";
+
+message Response {
+    int32 req_sequence = 1;
+    oneof msg {
+        UploadResponse upload_response = 4;
+        SearchResponse search_response = 5;
+    }
+}
+
+message UploadResponse {
+    string msg = 1;
+}
+
+message SearchResponse {
+    oneof msg {
+        AndResponse and_response = 1;
+        OrResponse or_response = 2;
+        StarResponse star_response = 3;
+        QResponse q_response = 4;
+        // SuccessResponse success_response = 1;
+        // FailedResponse failed_response = 2;
+        // OrResponse or_response = 3;
+    }
+}
+
+message AndResponse {
+    oneof msg {
+        AndSuccess success = 1;
+        FailedTuple failed = 2;
+    }
+}
+
+message OrResponse {
+    repeated FailedTuple failed = 1;
+    message SuccessTuple {
+        repeated int32 files = 1;
+        bytes h_fw = 2;
+        string keyword = 3;
+    }
+    repeated SuccessTuple success = 2;
+    map<int32, bytes> files = 3;
+}
+
+message StarResponse {
+    oneof msg {
+        StarSuccess success = 1;
+        FailedTuple failed = 2;
+    }
+}
+
+message QResponse {
+    oneof msg {
+        QSuccess success = 1;
+        FailedTuple failed = 2;
+    }
+}
+
+message AndSuccess {
+    message SuccessTuple {
+        bytes bitmap = 1;
+        bytes hbitmap = 2;
+        repeated bytes hashset = 3;
+        string keyword = 4;
+    }
+    repeated SuccessTuple success = 1;
+    repeated bytes files = 2;
+}
+
+message ListOfFile {
+    repeated int32 files = 1;
+}
+
+message StarSuccess {
+    RadixTreeEl tree = 1;
+    map<string, ListOfFile> file_ids = 2;
+    map<int32, bytes> files = 3;
+}
+
+message QSuccess {
+    message QSuccessTuple {
+        int32 subtree_label = 1;
+        repeated int32 files = 2;
+        bytes h_fw = 3;
+    }
+    message QFailedTuple {
+        int32 subtree_label = 1;
+        int32 l_star = 2;
+        bytes h_cp = 3;
+        repeated int32 L_cl = 4;
+    }
+    repeated QSuccessTuple success = 1;
+    repeated QFailedTuple failed = 2;
+    bytes h_cp = 3;
+    string L_c = 4;
+    map<int32, bytes> files = 5;
+}
+
+message FailedResponse {
+    repeated FailedTuple msg = 1;
+}
+message SuccessResponse {
+    oneof msg {
+        AndSuccess and = 1;
+        StarSuccess star = 2;
+        QSuccess q = 3;
+    }
+}
+
+message FailedTuple {
+    int32 l_star = 1;
+    bytes h_cp = 2;
+    repeated int32 L_cl = 3;
+    string keyword = 4;
+}

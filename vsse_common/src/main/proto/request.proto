@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package vsse.proto;
+import "radix.proto";
+message Request {
+    int32 sequence = 1;
+    oneof msg {
+        UploadRequest upload_request = 4;
+        SearchRequest search_request = 5;
+    }
+}
+
+message UploadRequest {
+    int32 fileCount = 1;
+    RadixTreeEl tree = 2;
+}
+
+message SearchRequest {
+    oneof msg {
+        SearchAnd and = 1;
+        SearchOr or = 2;
+        SearchStar star = 3;
+        SearchQ q = 4;
+    }
+}
+
+message SearchAnd {
+    repeated string keywords = 1;
+}
+message SearchOr {
+    repeated string keywords = 1;
+}
+message SearchStar {
+    string head = 1;
+}
+message SearchQ {
+    string part1 = 1;
+    string part2 = 2;
+}

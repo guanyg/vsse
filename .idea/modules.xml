@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/test_client/test_client.iml" filepath="$PROJECT_DIR$/test_client/test_client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test_common/test_common.iml" filepath="$PROJECT_DIR$/test_common/test_common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test_server/test_server.iml" filepath="$PROJECT_DIR$/test_server/test_server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vsse.iml" filepath="$PROJECT_DIR$/vsse.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vsse_client/vsse_client.iml" filepath="$PROJECT_DIR$/vsse_client/vsse_client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vsse_common/vsse_common.iml" filepath="$PROJECT_DIR$/vsse_common/vsse_common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vsse_server/vsse_server.iml" filepath="$PROJECT_DIR$/vsse_server/vsse_server.iml" />
+    </modules>
+  </component>
+</project>

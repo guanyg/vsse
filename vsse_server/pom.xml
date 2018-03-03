@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>vsse</artifactId>
+        <groupId>cn.edu.zjgsu.is</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>vsse-server</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>vsse-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.6.Final</version>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>evaluation</id>
+            <dependencies>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>test-common</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.aspectj</groupId>
+                    <artifactId>aspectjrt</artifactId>
+                    <version>1.8.13</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>aspectj-maven-plugin</artifactId>
+                        <version>1.11</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>compile</goal>       <!-- use this goal to weave all your main classes -->
+                                    <goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <showWeaveInfo>true</showWeaveInfo>
+                            <complianceLevel>1.8</complianceLevel>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                            <aspectLibraries>
+                                <aspectLibrary>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>test-common</artifactId>
+                                </aspectLibrary>
+                            </aspectLibraries>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.aspectj</groupId>
+                                <artifactId>aspectjtools</artifactId>
+                                <version>1.8.13</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+            <activation>
+                <property>
+                    <name>!production</name>
+                </property>
+            </activation>
+        </profile>
+    </profiles>
+
+</project>

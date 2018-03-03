@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package vsse.proto;
+
+import "request.proto";
+import "response.proto";
+import "filedesc.proto";
+
+message Test {
+    oneof msg {
+        TestRegRequest reg_req = 1;
+        TestRegResponse reg_resp = 2;
+        TestCasePush test_case = 3;
+        TestResult test_result = 4;
+    }
+}
+
+message TestRegRequest {
+    enum DeviceType {
+        PC = 0;
+        ANDROID = 1;
+    }
+    DeviceType device_type = 1;
+    string device_name = 2;
+    map<string, string> props = 3;
+}
+
+message TestRegResponse {
+    string device_id = 1;
+    Credential credential = 2;
+}
+
+message TestCasePush {
+    int32 testCaseId = 1;
+    SearchRequest query = 2;
+    SearchResponse resp = 3;
+}
+
+message TestResult {
+    int32 testCaseId = 1;
+    int64 verify_time = 2;
+}
