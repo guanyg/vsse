@@ -2,13 +2,12 @@
 
 The test client for Android devices see [Github:guanyg/vsse-android](https://github.com/guanyg/vsse-android).
 
-## Test Server
-
-### Build
+## Build
 ```bash
-cd test_server
-mvn assembly:single
+mvn install
 ```
+
+## Test Server
 
 ### Run
 ```bash
@@ -30,40 +29,37 @@ password=<password>
 
 SQL to create the result table:
 ```iso92-sql
-DROP TABLE IF EXISTS result;
-CREATE TABLE result ( 
-    tcid int, -- 1 
-    t_keyword_cnt int, -- 2 
-    t_document_cnt int, -- 3 
-    radix_tree longblob, -- 4 
-    keyword varchar(500), -- 5 
-    keyword_cnt int, -- 6 
-    prefix_len int, -- 7 
-    tail_len int, -- 8 
-    type varchar(5), -- 9 
-    query longblob, -- 10 
-    response longblob, -- 11 
-    search_time int, -- 12 
-    verify_time_pc int, -- 13 
-    verify_time_and int, -- 14 
-    run varchar(30), -- 15 
-    t timestamp, -- 16 
-    node_cnt int(11), -- 17
-    primary key(run, tcid), 
-    index(t_keyword_cnt), 
-    index(t_document_cnt), 
-    index(run) 
-);
+DROP TABLE IF EXISTS `result`;
+CREATE TABLE `result` (
+  `tcid` int(11) NOT NULL,
+  `t_keyword_cnt` int(11) DEFAULT NULL,
+  `t_document_cnt` int(11) DEFAULT NULL,
+  `radix_tree` longblob,
+  `keyword` varchar(500) DEFAULT NULL,
+  `keyword_cnt` int(11) DEFAULT NULL,
+  `prefix_len` int(11) DEFAULT NULL,
+  `tail_len` int(11) DEFAULT NULL,
+  `type` varchar(5) DEFAULT NULL,
+  `query` longblob,
+  `response` longblob,
+  `search_time` int(11) DEFAULT NULL,
+  `verify_time_pc` int(11) DEFAULT NULL,
+  `verify_time_and` int(11) DEFAULT NULL,
+  `run` varchar(30) NOT NULL,
+  `t` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `node_cnt` int(11) DEFAULT NULL,
+  `success_lst_size` int(11) DEFAULT NULL,
+  `failed_lst_size` int(11) DEFAULT NULL,
+  `file_cnt` int(11) DEFAULT NULL,
+  PRIMARY KEY (`run`,`tcid`),
+  KEY `t_keyword_cnt` (`t_keyword_cnt`),
+  KEY `t_document_cnt` (`t_document_cnt`),
+  KEY `run` (`run`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ``` 
 
 
 ## Test Client
-
-### Build
-```bash
-cd test_client
-mvn assembly:single
-```
 
 ### Run
 

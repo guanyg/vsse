@@ -12,7 +12,7 @@ public class SearchThread implements Runnable {
     private final BlockingQueue<TestCaseDTO> queries;
     private final BlockingQueue<TestCaseDTO> searchResult;
 
-    private ServerContext serverContext = Context.getParameter(Context.P_SERVER_CONTEXT);
+    private ServerContext serverContext = Context.SERVER_CONTEXT;
     private TestCaseDTO tc;
 
     public SearchThread(BlockingQueue<TestCaseDTO> queries, BlockingQueue<TestCaseDTO> searchResult) {

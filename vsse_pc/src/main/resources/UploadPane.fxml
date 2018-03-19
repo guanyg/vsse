@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <SplitPane dividerPositions="0.5" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+                   minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
+            <items>
+                <VBox>
+                    <children>
+                        <TableView fx:id="documentTable">
+                            <columns>
+                                <TableColumn fx:id="idxCol" editable="false" prefWidth="45.0" sortable="false"
+                                             text="#"/>
+                                <TableColumn fx:id="contentCol" prefWidth="105.0" text="Content"/>
+                                <TableColumn fx:id="keywordsCol" prefWidth="145.0" text="Keywords"/>
+                            </columns>
+                        </TableView>
+                        <HBox alignment="TOP_RIGHT" prefHeight="56.0" prefWidth="296.0" spacing="5.0">
+                            <children>
+                                <Button fx:id="addBtn" defaultButton="true" mnemonicParsing="false" text="Add"/>
+                                <Button fx:id="removeBtn" mnemonicParsing="false" text="Remove"/>
+                            </children>
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </padding>
+                        </HBox>
+                    </children>
+                </VBox>
+                <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                    <children>
+                        <Label text="File Content"/>
+                        <TextArea fx:id="contentArea" prefHeight="232.0" prefWidth="286.0"/>
+                        <Label text="Keywords">
+                            <VBox.margin>
+                                <Insets top="10.0"/>
+                            </VBox.margin>
+                        </Label>
+                        <TextField fx:id="keywordsField"/>
+                    </children>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                    </padding>
+                </VBox>
+            </items>
+        </SplitPane>
+        <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0">
+            <items>
+                <Button fx:id="uploadBtn" mnemonicParsing="false" text="Upload"/>
+                <Button fx:id="cancelBtn" cancelButton="true" mnemonicParsing="false" text="Cancel"/>
+            </items>
+        </ToolBar>
+    </children>
+</VBox>

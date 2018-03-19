@@ -2,13 +2,14 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/test_client/test_client.iml" filepath="$PROJECT_DIR$/test_client/test_client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/test_common/test_common.iml" filepath="$PROJECT_DIR$/test_common/test_common.iml" />
-      <module fileurl="file://$PROJECT_DIR$/test_server/test_server.iml" filepath="$PROJECT_DIR$/test_server/test_server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test_client/test-client.iml" filepath="$PROJECT_DIR$/test_client/test-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test_common/test-common.iml" filepath="$PROJECT_DIR$/test_common/test-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test_server/test-server.iml" filepath="$PROJECT_DIR$/test_server/test-server.iml" />
       <module fileurl="file://$PROJECT_DIR$/vsse.iml" filepath="$PROJECT_DIR$/vsse.iml" />
-      <module fileurl="file://$PROJECT_DIR$/vsse_client/vsse_client.iml" filepath="$PROJECT_DIR$/vsse_client/vsse_client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/vsse_common/vsse_common.iml" filepath="$PROJECT_DIR$/vsse_common/vsse_common.iml" />
-      <module fileurl="file://$PROJECT_DIR$/vsse_server/vsse_server.iml" filepath="$PROJECT_DIR$/vsse_server/vsse_server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vsse_client/vsse-client.iml" filepath="$PROJECT_DIR$/vsse_client/vsse-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vsse_common/vsse-common.iml" filepath="$PROJECT_DIR$/vsse_common/vsse-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vsse_pc/vsse-pc.iml" filepath="$PROJECT_DIR$/vsse_pc/vsse-pc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vsse_server/vsse-server.iml" filepath="$PROJECT_DIR$/vsse_server/vsse-server.iml" />
     </modules>
   </component>
 </project>

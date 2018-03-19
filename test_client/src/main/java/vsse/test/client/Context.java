@@ -40,10 +40,10 @@ public class Context {
                     try {
                         clientContext.verify(tc.getQuery(), tc.getResp());
                         channel.writeAndFlush(Test.newBuilder()
-                                                      .setTestResult(TestOuterClass.TestResult.newBuilder()
-                                                                             .setTestCaseId(tc.getTestCaseId())
-                                                                             .setVerifyTime(currentTc.getVerifyTime()))
-                                                      .build());
+                                .setTestResult(TestOuterClass.TestResult.newBuilder()
+                                        .setTestCaseId(tc.getTestCaseId())
+                                        .setVerifyTime(currentTc.getVerifyTime()))
+                                .build());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

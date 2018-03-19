@@ -22,7 +22,7 @@ public class SecurityUtil {
     }
 
     public char FPE(char i) {
-        return i;
+        return credential.getK().charAt(i - 'a');
     }
 
     public String FPE(String s) {

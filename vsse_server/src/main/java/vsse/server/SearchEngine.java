@@ -5,9 +5,9 @@ import org.apache.log4j.Logger;
 import org.roaringbitmap.RoaringBitmap;
 import vsse.annotation.Timeit;
 import vsse.annotation.Timeit.TYPE;
+import vsse.model.DocumentDTO;
 import vsse.model.RadixTree;
 import vsse.model.RadixTree.GetNodeResp;
-import vsse.proto.Filedesc;
 import vsse.proto.RequestOuterClass.SearchRequest;
 import vsse.proto.RequestOuterClass.SearchRequest.MsgCase;
 import vsse.proto.ResponseOuterClass.*;
@@ -61,7 +61,7 @@ public class SearchEngine {
     }
 
     static List<ByteString> getDocumentByDes(RadixTree tree, IntStream des) {
-        return des.mapToObj(tree.getDocmap()::get).map(Filedesc.Document::getCipher).collect(Collectors.toList());
+        return des.mapToObj(tree.getDocmap()::get).map(DocumentDTO::getCipher).map(ByteString::copyFrom).collect(Collectors.toList());
     }
 
     public SearchResponse search(SearchRequest request) {
@@ -130,8 +130,8 @@ public class SearchEngine {
                                             .setKeyword(lNode.getW())
                                             .build()).collect(Collectors.toList()))
                                     .addAllFailed(failedLst.stream()
-                                                          .map(SearchEngine::buildFailedTuple)
-                                                          .collect(Collectors.toList()))
+                                            .map(SearchEngine::buildFailedTuple)
+                                            .collect(Collectors.toList()))
                                     .putAllFiles(fileCollection.getFiles()))
                     .build();
         }
@@ -192,8 +192,8 @@ public class SearchEngine {
                                 .build())
                         .collect(Collectors.toList());
                 response.setSuccess(AndSuccess.newBuilder()
-                                            .addAllSuccess(successTuple)
-                                            .addAllFiles(getDocumentByDes(tree, Arrays.stream(des))));
+                        .addAllSuccess(successTuple)
+                        .addAllFiles(getDocumentByDes(tree, Arrays.stream(des))));
             }
             return SearchResponse.newBuilder().setAndResponse(response).build();
         }
@@ -242,9 +242,9 @@ public class SearchEngine {
                                         .addAllFiles(fileCollection.putDes(n.getDes()))
                                         .build()));
                 response.setSuccess(StarSuccess.newBuilder()
-                                            .setTree(subTree.serialize(true))
-                                            .putAllFileIds(fileIds)
-                                            .putAllFiles(fileCollection.getFiles()));
+                        .setTree(subTree.serialize(true))
+                        .putAllFileIds(fileIds)
+                        .putAllFiles(fileCollection.getFiles()));
             }
             return SearchResponse.newBuilder().setStarResponse(response).build();
         }
@@ -308,28 +308,28 @@ public class SearchEngine {
                         .setLC(n.getLc())
                         .setHCp(ByteString.copyFrom(n.getHcp()))
                         .addAllSuccess(successLst.entrySet()
-                                               .stream()
-                                               .map(entry -> QSuccess.QSuccessTuple.newBuilder()
-                                                       .setHFw(ByteString.copyFrom(entry.getValue().getHcw()))
-                                                       .addAllFiles(fileCollection.putDes(entry.getValue().getDes()))
-                                                       .setSubtreeLabel(entry.getKey())
-                                                       .build())
-                                               .collect(Collectors.toList()))
+                                .stream()
+                                .map(entry -> QSuccess.QSuccessTuple.newBuilder()
+                                        .setHFw(ByteString.copyFrom(entry.getValue().getHcw()))
+                                        .addAllFiles(fileCollection.putDes(entry.getValue().getDes()))
+                                        .setSubtreeLabel(entry.getKey())
+                                        .build())
+                                .collect(Collectors.toList()))
                         .addAllFailed(failedLst.entrySet()
-                                              .stream()
-                                              .map(entry -> QSuccess.QFailedTuple.newBuilder()
-                                                      .setSubtreeLabel(entry.getKey())
-                                                      .setLStar(getNodeResp.getL_star() + entry.getValue().getL_star() + 1)
-                                                      .setHCp(ByteString.copyFrom(entry.getValue().getNode().getHcp()))
-                                                      .addAllLCl(
-                                                              entry.getValue()
-                                                                      .getNode()
-                                                                      .getLc()
-                                                                      .chars()
-                                                                      .boxed()
-                                                                      .collect(Collectors.toList()))
-                                                      .build()
-                                              ).collect(Collectors.toList()))
+                                .stream()
+                                .map(entry -> QSuccess.QFailedTuple.newBuilder()
+                                        .setSubtreeLabel(entry.getKey())
+                                        .setLStar(getNodeResp.getL_star() + entry.getValue().getL_star() + 1)
+                                        .setHCp(ByteString.copyFrom(entry.getValue().getNode().getHcp()))
+                                        .addAllLCl(
+                                                entry.getValue()
+                                                        .getNode()
+                                                        .getLc()
+                                                        .chars()
+                                                        .boxed()
+                                                        .collect(Collectors.toList()))
+                                        .build()
+                                ).collect(Collectors.toList()))
                         .putAllFiles(fileCollection.getFiles());
                 response.setSuccess(sResponse);
             }
@@ -377,7 +377,8 @@ public class SearchEngine {
         public Map<Integer, ByteString> getFiles() {
             return files
                     .parallelStream()
-                    .collect(Collectors.toMap(i -> i, i -> tree.getDocmap().get(i).getCipher()));
+                    .collect(Collectors.toMap(i -> i,
+                            i -> ByteString.copyFrom(tree.getDocmap().get(i).getCipher())));
         }
     }
 }

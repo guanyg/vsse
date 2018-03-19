@@ -1,5 +1,6 @@
-package vsse.test.server;
+package vsse.server;
 
+import com.google.protobuf.GeneratedMessageV3;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -10,53 +11,42 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.logging.LoggingHandler;
-import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
-import vsse.proto.TestOuterClass.Test;
-import vsse.util.Util;
+import vsse.model.DocumentDTO;
+import vsse.model.RadixTree;
+import vsse.proto.RequestOuterClass;
+import vsse.proto.RequestOuterClass.Request;
+import vsse.proto.ResponseOuterClass.Response;
+import vsse.proto.ResponseOuterClass.SearchResponse;
+import vsse.proto.ResponseOuterClass.UploadResponse;
 
+import java.util.stream.Collectors;
 
 public class Server {
     private static final Logger logger = Logger.getLogger(Server.class);
-    private final Context context = new Context();
+    private ServerContext context = new ServerContext();
     private EventLoopGroup workerGroup;
     private NioEventLoopGroup bossGroup;
     private ChannelFuture f;
 
     public static void main(String[] args) {
-
-        Options options = new Options();
-        options.addOption("p", "port", true, "test server port");
-        options.addRequiredOption("c", "credential", true, "credential path");
-        options.addRequiredOption("f", "filedir", true, "file directory");
-        options.addRequiredOption("d", "dbconf", true, "database configuration");
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd;
-        try {
-            cmd = parser.parse(options, args);
-        } catch (ParseException e) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("java -jar " + Util.getJarName(Server.class) + " [args]", options);
-            return;
+        int port = -1;
+        if (args.length == 1) {
+            try {
+                port = Integer.valueOf(args[0]);
+            } catch (Throwable ex) {
+                // ignore
+            }
         }
-        int port = 5678;
-        try {
-            if (cmd.hasOption('p'))
-                port = Integer.valueOf(cmd.getOptionValue('p'));
-        } catch (Throwable ex) {
-            logger.info("Use default port:" + port);
+        if (port < 0) {
+            port = 5678;
         }
-
-        Context.CREDENTIAL_PATH = cmd.getOptionValue('c');
-        Context.TESTFILE_DIR = cmd.getOptionValue('f');
-        Context.DBCONF = cmd.getOptionValue('d');
-
         new Server().start(port);
     }
 
+
     private void shutdown() {
         f.channel().close();
-        context.shutdown();
         if (workerGroup != null) workerGroup.shutdownGracefully();
         if (bossGroup != null) bossGroup.shutdownGracefully();
         System.out.println("Shutdown!");
@@ -77,7 +67,7 @@ public class Server {
                             @Override
                             protected void initChannel(SocketChannel ch) throws Exception {
                                 ch.pipeline().addLast(new ProtobufVarint32FrameDecoder());
-                                ch.pipeline().addLast(new ProtobufDecoder(Test.getDefaultInstance()));
+                                ch.pipeline().addLast(new ProtobufDecoder(Request.getDefaultInstance()));
                                 ch.pipeline().addLast(new ProtobufVarint32LengthFieldPrepender());
                                 ch.pipeline().addLast(new ProtobufEncoder());
                                 ch.pipeline().addLast(new MSGHandler());
@@ -90,7 +80,19 @@ public class Server {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        this.context.start();
+    }
+
+    private void sendResponse(ChannelHandlerContext ctx, Request request, GeneratedMessageV3 responseObj) {
+        Response.Builder response = Response.newBuilder();
+        response.setState(context.getState());
+        response.setReqSequence(request.getSequence());
+
+        if (responseObj instanceof SearchResponse) {
+            response.setSearchResponse((SearchResponse) responseObj);
+        } else if (responseObj instanceof UploadResponse) {
+            response.setUploadResponse((UploadResponse) responseObj);
+        }
+        ctx.writeAndFlush(response);
     }
 
     private class MSGHandler extends ChannelInboundHandlerAdapter {
@@ -100,8 +102,37 @@ public class Server {
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            context.onRequest(ctx, (Test) msg);
+            Request request = (Request) msg;
+            switch ((request.getMsgCase())) {
+                case UPLOAD_REQUEST:
+                    RequestOuterClass.UploadRequest upload = request.getUploadRequest();
+
+                    RadixTree tree = new RadixTree();
+                    tree.load(upload.getTree());
+                    tree.setDocuments(upload.getFilesList()
+                            .stream()
+                            .map(DocumentDTO::parse)
+                            .collect(Collectors.toList()));
+                    context.setTree(tree);
+
+                    sendResponse(ctx, request, UploadResponse
+                            .newBuilder()
+                            .setMsg("Upload Success")
+                            .build());
+
+                    break;
+                case SEARCH_REQUEST:
+                    if (context.getState() == Response.State.READY) {
+                        context.doSearchAsync(request.getSearchRequest(),
+                                searchResponse -> {
+                                    sendResponse(ctx, request, searchResponse);
+                                });
+                    }
+                    break;
+                default:
+                    sendResponse(ctx, request, null);
+                    break;
+            }
         }
     }
-
 }

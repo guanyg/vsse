@@ -3,8 +3,6 @@ package vsse.model;
 import com.google.protobuf.ByteString;
 import org.roaringbitmap.RoaringBitmap;
 import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
-import vsse.proto.Filedesc.Document;
-import vsse.proto.Filedesc.Keyword;
 import vsse.proto.Radix.RadixTreeEl;
 import vsse.proto.Radix.TreeNodeEl;
 import vsse.security.SecurityUtil;
@@ -17,23 +15,24 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class RadixTree {
-    private static final char[] LABELS =
-            new char[]{
-                    '$', '#', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-                    'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
-            };
-    //  private static final Logger log = Logger.getLogger(RadixTree.class.getSimpleName());
+    private static final char[] LABELS = new char[]{
+            '$', '#', 'a', 'b', 'c',
+            'd', 'e', 'f', 'g', 'h',
+            'i', 'j', 'k', 'l', 'm',
+            'n', 'o', 'p', 'q', 'r',
+            's', 't', 'u', 'v', 'w',
+            'x', 'y', 'z'
+    };
+
     private final SecurityUtil securityUtil;
     private Node root;
-    private int fileNumber;
-
-    public Collection<String> getKeywords() {
-        return keywords;
-    }
-
     private Collection<String> keywords;
-    private List<Document> documents;
-    private Map<Integer, Document> docmap;
+    private List<DocumentDTO> documents;
+    private Map<Integer, DocumentDTO> docmap;
+
+    public RadixTree() {
+        this(null);
+    }
 
     public RadixTree(SecurityUtil securityUtil) {
         this.securityUtil = securityUtil;
@@ -42,7 +41,7 @@ public class RadixTree {
         root.ancestors = "";
     }
 
-    public static int getLabelIdx(byte label) {
+    private static int getLabelIdx(byte label) {
         int idx;
         switch (label) {
             case '$':
@@ -56,6 +55,10 @@ public class RadixTree {
         return idx;
     }
 
+    public Collection<String> getKeywords() {
+        return keywords;
+    }
+
     private void update() {
         if (securityUtil == null) return;
         root.updateHash();
@@ -63,25 +66,27 @@ public class RadixTree {
 
     public void putKeywords(Collection<String> keywords) {
         if (securityUtil == null) return;
-        keywords
+        keywords = keywords
                 .stream()
                 .parallel()
-                .forEach(
-                        k -> {
-                            Node cur = root;
-                            for (byte c : k.getBytes()) {
-                                synchronized (cur) {
-                                    Node n = cur.children[getLabelIdx(c)];
-                                    if (n == null) n = new Node(cur, (char) c);
-                                    cur = n;
-                                }
-                            }
-                            new LeafNode(cur);
-                        });
+                .map(securityUtil::FPE)
+                .collect(Collectors.toList());
+        keywords.forEach(
+                k -> {
+                    Node cur = root;
+                    for (byte c : k.getBytes()) {
+                        synchronized (cur) {
+                            Node n = cur.children[getLabelIdx(c)];
+                            if (n == null) n = new Node(cur, (char) c);
+                            cur = n;
+                        }
+                    }
+                    new LeafNode(cur);
+                });
         this.keywords = keywords;
     }
 
-    public void putDocuments(List<Document> documents) {
+    public void putDocuments(List<DocumentDTO> documents) {
         if (securityUtil == null) return;
         documents
                 .stream()
@@ -90,9 +95,9 @@ public class RadixTree {
                 .forEach(
                         d -> {
                             //              log.info(String.format("%d, %s", d.getId(), Arrays.toString(lnode.bitmap)));
-                            d.getKeywordsList()
-                                    .parallelStream()
-                                    .map(Keyword::getKeyword)
+                            Arrays.stream(d.getKeywords())
+                                    .parallel()
+                                    .map(securityUtil::FPE)
                                     .filter(keywords::contains)
                                     .forEach(
                                             w -> {
@@ -106,7 +111,7 @@ public class RadixTree {
                                             });
                         });
         this.documents = documents;
-        this.docmap = documents.stream().collect(Collectors.toMap(Document::getId, i -> i));
+        this.docmap = documents.stream().collect(Collectors.toMap(DocumentDTO::getId, i -> i));
         this.update();
     }
 
@@ -133,12 +138,6 @@ public class RadixTree {
         return ret;
     }
 
-    /**
-     * Get Node by Keyword
-     *
-     * @param keyword
-     * @return
-     */
     public GetNodeResp getNodeByKeyword(String keyword) {
         GetNodeResp ret = getNodesByPrefix(keyword);
         LeafNode lNode = (LeafNode) ret.getNode().children[getLabelIdx((byte) '#')];
@@ -147,15 +146,6 @@ public class RadixTree {
             ret.setNode(lNode);
         }
         return ret;
-    }
-
-    public int getFileNumber() {
-        return fileNumber;
-    }
-
-    public void setFileNumber(int fileNumber) {
-        if (securityUtil == null) return;
-        this.fileNumber = fileNumber;
     }
 
     public List<Node> getMiddleNodes() {
@@ -256,7 +246,6 @@ public class RadixTree {
             if (nodeEl.getBitmap() != null && !nodeEl.getBitmap().isEmpty()) {
                 LeafNode leafNode = new LeafNode(parent);
                 if (prefix == null) {
-                    //          b.setDes(leafNode.getDes());
                     leafNode.setBitmap(nodeEl.getBitmap().toByteArray());
                     leafNode.setHbw(nodeEl.getHBitmap().toByteArray());
                     leafNode.setHashset(
@@ -265,9 +254,9 @@ public class RadixTree {
                                     .parallelStream()
                                     .map(ByteString::toByteArray)
                                     .collect(Collectors.toList()));
+                    leafNode.setDes(leafNode.getBitmapObject().toString().replaceAll("[\\{\\}]", ""));
                 }
                 leafNode.setHcw(nodeEl.getHCwt().toByteArray());
-                //        leafNode.setDes(nodeEl.getDes());
                 node = leafNode;
             } else if (parent != null) {
                 node = new Node(parent, (char) nodeEl.getLabel());
@@ -286,11 +275,16 @@ public class RadixTree {
         return this;
     }
 
-    public List<Document> getDocuments() {
+    public List<DocumentDTO> getDocuments() {
         return documents;
     }
 
-    public Map<Integer, Document> getDocmap() {
+    public void setDocuments(List<DocumentDTO> documents) {
+        this.documents = documents;
+        this.docmap = documents.stream().collect(Collectors.toMap(DocumentDTO::getId, i -> i));
+    }
+
+    public Map<Integer, DocumentDTO> getDocmap() {
         return docmap;
     }
 
@@ -447,7 +441,6 @@ public class RadixTree {
 
         public LeafNode(Node parent) {
             super(parent, '#');
-            //      this.bitmap = new byte[(int) Math.ceil((fileNumber) / 8.0)];
             this.bitmap = new RoaringBitmap();
             this.hashset = new ArrayList<>();
             this.files = new ArrayList<>();
@@ -462,13 +455,11 @@ public class RadixTree {
             this.des = des;
         }
 
-        public void addDocument(Document d) {
+        public void addDocument(DocumentDTO d) {
             this.bitmap.add(d.getId());
-            // lnode.bitmap[d.getId() / 8] |= (0x01 << (d.getId() % 8));
 
-            this.files.add(d.getCipher().toByteArray());
-            //      this.fileHashes.add(securityUtil.hash(d.getCipher().toByteArray()));
-            this.hashset.add(securityUtil.HMAC(d.getCipher().toByteArray(), this.w.getBytes()));
+            this.files.add(d.getCipher());
+            this.hashset.add(securityUtil.HMAC(d.getCipher(), this.w.getBytes()));
             this.setDes(this.getDes() + "," + d.getId());
             this._bitmap = null;
         }
@@ -533,11 +524,5 @@ public class RadixTree {
             hcw = securityUtil.HMAC(files, w.getBytes());
             hbw = securityUtil.HMAC(getBitmap(), w.getBytes());
         }
-
-        //    public void appendDocument(Document doc) {
-        //      fileHashes.append(new String(doc.getHash().toByteArray()));
-        //      hashset.add(securityUtil.HMAC(doc.getCipher().toByteArray(), w.getBytes()));
-        //      bitmap[doc.getId() / 8] |= 0x1 << (doc.getId() % 8);
-        //    }
     }
 }

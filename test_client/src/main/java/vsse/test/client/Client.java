@@ -24,7 +24,7 @@ public class Client {
     private final Device device;
     private final Context context;
 
-    private Client(Device d, String host, int port) {
+    public Client(Device d, String host, int port) {
         context = new Context();
         connectTo(host, port);
         this.device = d;
@@ -33,7 +33,7 @@ public class Client {
     public static void main(String[] args) {
         Options options = new Options();
         options.addRequiredOption("h", "host", true, "test server IP");
-        options.addRequiredOption("p", "port", false, "test server port");
+        options.addOption("p", "port", true, "test server port");
         options.addRequiredOption("n", "name", true, "test client name");
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd;

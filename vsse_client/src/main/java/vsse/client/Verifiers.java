@@ -193,8 +193,8 @@ public class Verifiers {
             AndVerifyTuple(AndSuccess.SuccessTuple tuple) {
                 this.keyword = tuple.getKeyword();
                 this.hashset.addAll(tuple.getHashsetList().stream()
-                                            .map(ByteString::toByteArray)
-                                            .collect(Collectors.toSet()));
+                        .map(ByteString::toByteArray)
+                        .collect(Collectors.toSet()));
             }
         }
     }
@@ -216,7 +216,7 @@ public class Verifiers {
                     StarSuccess sResponse = response.getSuccess();
                     boolean failed = subtree.getMiddleNodes().stream()
                             .anyMatch(i -> !Arrays.equals(i.getHcp(),
-                                                          su.HMAC(i.getAncestors() + i.getLabel(), i.getLc())));
+                                    su.HMAC(i.getAncestors() + i.getLabel(), i.getLc())));
                     if (failed)
                         return false;
 
@@ -251,7 +251,7 @@ public class Verifiers {
             if (this.response.hasSuccess()) {
                 String prefix = request.getStar().getHead();
                 this.subtree = new RadixTree(su).load(this.response.getSuccess().getTree(),
-                                                      prefix.substring(0, prefix.length() - 1));
+                        prefix.substring(0, prefix.length() - 1));
             }
         }
     }
@@ -274,7 +274,7 @@ public class Verifiers {
                     QSuccess sResponse = response.getSuccess();
 
                     boolean failed = Arrays.equals(sResponse.getHCp().toByteArray(),
-                                                   su.HMAC(request.getPart1(), sResponse.getLC()));
+                            su.HMAC(request.getPart1(), sResponse.getLC()));
 
                     if (failed)
                         return false;
@@ -306,7 +306,7 @@ public class Verifiers {
                                     return true;
 
                                 String keyword = request.getPart1() + ((char) i.getSubtreeLabel()) + request.getPart2();
-                                if (i.getLClList().contains(keyword.charAt(i.getLStar())))
+                                if (i.getLClList().contains(keyword.charAt(i.getLStar() - 1)))
                                     return true;
 
                                 String prefix = "$" + keyword.substring(0, i.getLStar());

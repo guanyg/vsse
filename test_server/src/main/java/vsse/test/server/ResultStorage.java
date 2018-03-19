@@ -32,20 +32,21 @@ public class ResultStorage implements Runnable {
         this.closedTestCase = closedTestCase2;
 
         Properties prop = new Properties();
-        prop.load(new FileInputStream(Context.getParameter(Context.P_DBCONF)));
+        prop.load(new FileInputStream(Context.DBCONF));
 
         Class.forName(prop.getProperty("driverClass"));
         Connection conn = DriverManager.getConnection(prop.getProperty("url"),
-                                                      prop.getProperty("username"),
-                                                      prop.getProperty("password"));
+                prop.getProperty("username"),
+                prop.getProperty("password"));
         insertPS =
                 conn.prepareStatement(
                         "INSERT INTO result"
                                 + " (tcid, t_keyword_cnt, t_document_cnt, radix_tree," +
                                 " keyword, keyword_cnt, prefix_len, tail_len," +
                                 " type, query, response, search_time," +
-                                " verify_time_pc, verify_time_and, run, node_cnt)"
-                                + " VALUES(?,?,?,?, ?,?,?,?, ?,?,?,?, ?,?,?,?)");
+                                " verify_time_pc, verify_time_and, run, node_cnt," +
+                                " success_lst_size, failed_lst_size, file_cnt)"
+                                + " VALUES(?,?,?,?, ?,?,?,?, ?,?,?,?, ?,?,?,?, ?,?,?)");
     }
 
     private static void putKeywordData(PreparedStatement insertPS2, TestCaseDTO tc)
@@ -135,6 +136,35 @@ public class ResultStorage implements Runnable {
                     nodeCount = tc.getResp().getStarResponse().getSuccess().getTree().getNodesCount();
                 }
                 insertPS.setInt(16, nodeCount);
+
+                int sNCount = 0;
+                int fNCount = 0;
+                if (tc.getType() == MsgCase.Q) {
+                    sNCount = tc.getResp().getQResponse().getSuccess().getSuccessCount();
+                    fNCount = tc.getResp().getQResponse().getSuccess().getFailedCount();
+                }
+                insertPS.setInt(17, sNCount);
+                insertPS.setInt(18, fNCount);
+
+                int fileCnt = 0;
+                switch (tc.getType()) {
+
+                    case AND:
+                        fileCnt = tc.getResp().getAndResponse().getSuccess().getFilesCount();
+                        break;
+                    case OR:
+                        fileCnt = tc.getResp().getOrResponse().getFilesCount();
+                        break;
+                    case STAR:
+                        fileCnt = tc.getResp().getStarResponse().getSuccess().getFilesCount();
+                        break;
+                    case Q:
+                        fileCnt = tc.getResp().getQResponse().getSuccess().getFilesCount();
+                        break;
+                    case MSG_NOT_SET:
+                        break;
+                }
+                insertPS.setInt(19, fileCnt);
                 insertPS.addBatch();
             } catch (SQLException e) {
                 e.printStackTrace();

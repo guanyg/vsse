@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package vsse.proto;
 import "radix.proto";
+import "filedesc.proto";
 message Request {
-    int32 sequence = 1;
+    int64 sequence = 1;
     oneof msg {
         UploadRequest upload_request = 4;
         SearchRequest search_request = 5;
@@ -11,7 +12,7 @@ message Request {
 }
 
 message UploadRequest {
-    int32 fileCount = 1;
+    repeated Document files = 1;
     RadixTreeEl tree = 2;
 }
 

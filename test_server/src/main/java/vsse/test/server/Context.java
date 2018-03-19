@@ -14,17 +14,16 @@ import vsse.test.TimedAspect;
 import vsse.util.Counter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
 public class Context {
-    public static final Param<ClientContext> P_CLIENT_CONTEXT = new Param<>();
-    public static final Param<ServerContext> P_SERVER_CONTEXT = new Param<>();
-    public static final Param<String> P_CREDENTIAL_PATH = new Param<>();
-    public static final Param<String> P_TESTFILE_DIR = new Param<>();
-    public static final Param<String> P_DBCONF = new Param<>();
+    public static ClientContext CLIENT_CONTEXT;
+    public static ServerContext SERVER_CONTEXT;
+    public static String CREDENTIAL_PATH;
+    public static String TESTFILE_DIR;
+    public static String DBCONF;
 
     private static final Logger logger = Logger.getLogger(Context.class);
     private final BlockingQueue<TestCaseDTO> closedTestCase = new LinkedBlockingQueue<>();
@@ -44,8 +43,8 @@ public class Context {
 
 
     public void start() {
-        Context.setParameter(P_CLIENT_CONTEXT, new ClientContext(Context.getParameter(P_CREDENTIAL_PATH)));
-        Context.setParameter(P_SERVER_CONTEXT, new ServerContext());
+        CLIENT_CONTEXT = new ClientContext(CREDENTIAL_PATH);
+        SERVER_CONTEXT = new ServerContext();
 
         SearchThread searchThread = new SearchThread(queries, searchResult);
         TimedAspect.setGetter(searchThread::getTc);
@@ -110,7 +109,7 @@ public class Context {
                 resp.setRegResp(
                         TestOuterClass.TestRegResponse.newBuilder()
                                 .setDeviceId(dev.getDeviceId() + "")
-                                .setCredential(Context.getParameter(P_CLIENT_CONTEXT).getCredential()));
+                                .setCredential(CLIENT_CONTEXT.getCredential()));
                 map.put(channelId, dev);
                 ctx.writeAndFlush(resp);
                 synchronized (cTCLock) {
@@ -165,17 +164,4 @@ public class Context {
         return currentTestCase;
     }
 
-    private static class Param<T> {
-    }
-
-    private static final Map<Param<?>, Object> param = new HashMap<>();
-
-    public static synchronized <T> void setParameter(Param<T> parameter, T value) {
-        param.put(parameter, value);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static synchronized <T> T getParameter(Param<T> parameter) {
-        return (T) param.get(parameter);
-    }
 }

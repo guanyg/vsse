@@ -2,6 +2,7 @@ package vsse.test.server;
 
 import org.apache.log4j.Logger;
 import vsse.client.ClientContext;
+import vsse.model.DocumentDTO;
 import vsse.model.RadixTree;
 import vsse.proto.Filedesc;
 import vsse.proto.Filedesc.Document;
@@ -22,15 +23,13 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static vsse.proto.RequestOuterClass.SearchRequest;
-import static vsse.test.server.Context.P_CLIENT_CONTEXT;
-import static vsse.test.server.Context.P_SERVER_CONTEXT;
 
 public class QueryGenerator implements Runnable {
     private static final Logger logger = Logger.getLogger(QueryGenerator.class);
     private final BlockingQueue<TestCaseDTO> queue;
 
-    private ClientContext clientContext = Context.getParameter(P_CLIENT_CONTEXT);
-    private ServerContext serverContext = Context.getParameter(P_SERVER_CONTEXT);
+    private ClientContext clientContext = Context.CLIENT_CONTEXT;
+    private ServerContext serverContext = Context.SERVER_CONTEXT;
 
     private List<String> selectedKeywords;
     private List<String> keywords;
@@ -46,8 +45,8 @@ public class QueryGenerator implements Runnable {
         // Load documents
         List<Document> documents =
                 randomlySelect(
-                        Arrays.stream(Objects.requireNonNull(new File(Context.getParameter(Context.P_TESTFILE_DIR))
-                                                                     .listFiles((dir, name) -> name.endsWith(".bin"))))
+                        Arrays.stream(Objects.requireNonNull(new File(Context.TESTFILE_DIR)
+                                .listFiles((dir, name) -> name.endsWith(".bin"))))
                                 .map(f -> {
                                     Document ret = null;
                                     try (FileInputStream is = new FileInputStream(f)) {
@@ -78,7 +77,11 @@ public class QueryGenerator implements Runnable {
         this.selectedKeywords = selectedKeywords;
 
         // Build RadixTree
-        RadixTree tree = clientContext.buildRadixTree(documents, selectedKeywords);
+        RadixTree tree = clientContext.buildRadixTree(
+                documents.stream()
+                        .map(DocumentDTO::parse)
+                        .collect(Collectors.toList()),
+                selectedKeywords);
         serverContext.setTree(tree);
 
         KeywordGenerator defaultKG = null;

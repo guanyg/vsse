@@ -18,5 +18,4 @@ message TreeNodeEl {
     bytes bitmap = 7;
     bytes h_bitmap = 8;
     repeated bytes h_cws = 9;
-
 }
